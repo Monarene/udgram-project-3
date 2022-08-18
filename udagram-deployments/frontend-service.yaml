@@ -1,14 +1,28 @@
 apiVersion: v1
 kind: Service
 metadata:
-  labels:
-    service: frontend
   name: frontend
+  labels:
+    app: frontend
 spec:
+  type: ClusterIP
   ports:
-  - name: "8100"
-    port: 8100
-    targetPort: 80
+    - port: 8100
+      targetPort: 80
+      protocol: TCP
   selector:
-    service: frontend
-#  type: LoadBalancer    
+    app: frontend
+
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-frontend
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50

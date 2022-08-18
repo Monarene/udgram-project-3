@@ -1,14 +1,28 @@
 apiVersion: v1
 kind: Service
 metadata:
+  name: frontend
   labels:
-    service: reverseproxy
-  name: reverseproxy
+    app: frontend
 spec:
+  type: ClusterIP
   ports:
-  - name: "8080"
-    port: 8080
-    targetPort: 8080
+    - port: 8100
+      targetPort: 80
+      protocol: TCP
   selector:
-    service: reverseproxy
-#  type: LoadBalancer    
+    app: frontend
+
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-frontend
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50
